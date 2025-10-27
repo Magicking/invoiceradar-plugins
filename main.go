@@ -62,7 +62,7 @@ func main() {
 		err := executor.ExecuteSteps(plugin.CheckAuth)
 		if err != nil {
 			log.Printf("Authentication check failed: %v", err)
-			
+
 			if !*checkAuthOnly {
 				// Start authentication process
 				log.Println("\n=== Starting Authentication ===")
@@ -95,7 +95,7 @@ func main() {
 	}
 
 	log.Println("\n=== Plugin execution completed successfully ===")
-	
+
 	// Keep browser open for a moment to see results
 	log.Println("Browser will remain open for 5 seconds...")
 	fmt.Scanln() // Wait for user input before closing

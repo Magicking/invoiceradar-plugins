@@ -47,17 +47,17 @@ func (e *Executor) Close() {
 // interpolate replaces {{variable}} placeholders with actual values
 func (e *Executor) interpolate(text string) string {
 	result := text
-	
+
 	// Replace config variables
 	for key, value := range e.config {
 		result = strings.ReplaceAll(result, fmt.Sprintf("{{config.%s}}", key), value)
 	}
-	
+
 	// Replace stored variables
 	for key, value := range e.variables {
 		result = strings.ReplaceAll(result, fmt.Sprintf("{{%s}}", key), fmt.Sprintf("%v", value))
 	}
-	
+
 	return result
 }
 
@@ -119,15 +119,15 @@ func (e *Executor) executeStep(step Step) error {
 func (e *Executor) navigate(step Step) error {
 	url := e.interpolate(step.URL)
 	log.Printf("Navigating to: %s", url)
-	
+
 	tasks := chromedp.Tasks{
 		chromedp.Navigate(url),
 	}
-	
+
 	if step.WaitForNetworkIdle {
 		tasks = append(tasks, chromedp.WaitReady("body"))
 	}
-	
+
 	return chromedp.Run(e.ctx, tasks)
 }
 
@@ -137,10 +137,10 @@ func (e *Executor) waitForElement(step Step) error {
 	if timeout == 0 {
 		timeout = 30 * time.Second
 	}
-	
+
 	ctx, cancel := context.WithTimeout(e.ctx, timeout)
 	defer cancel()
-	
+
 	return chromedp.Run(ctx, chromedp.WaitVisible(selector))
 }
 
@@ -150,10 +150,10 @@ func (e *Executor) waitForURL(step Step) error {
 	if timeout == 0 {
 		timeout = 30 * time.Second
 	}
-	
+
 	ctx, cancel := context.WithTimeout(e.ctx, timeout)
 	defer cancel()
-	
+
 	// Wait and check URL periodically
 	start := time.Now()
 	for time.Since(start) < timeout {
@@ -170,7 +170,7 @@ func (e *Executor) waitForURL(step Step) error {
 		}
 		time.Sleep(500 * time.Millisecond)
 	}
-	
+
 	return fmt.Errorf("timeout waiting for URL: %s", expectedURL)
 }
 
@@ -179,7 +179,7 @@ func (e *Executor) waitForNavigation(step Step) error {
 	if timeout == 0 {
 		timeout = 10 * time.Second
 	}
-	
+
 	time.Sleep(timeout)
 	return nil
 }
@@ -189,7 +189,7 @@ func (e *Executor) waitForNetworkIdle(step Step) error {
 	if timeout == 0 {
 		timeout = 15 * time.Second
 	}
-	
+
 	time.Sleep(2 * time.Second) // Simplified network idle wait
 	return nil
 }
@@ -198,12 +198,12 @@ func (e *Executor) waitForNetworkIdle(step Step) error {
 func (e *Executor) checkElementExists(step Step) error {
 	selector := e.interpolate(step.Selector)
 	var nodes []*cdp.Node
-	
+
 	err := chromedp.Run(e.ctx, chromedp.Nodes(selector, &nodes, chromedp.ByQuery))
 	if err != nil || len(nodes) == 0 {
 		return fmt.Errorf("element not found: %s", selector)
 	}
-	
+
 	log.Printf("✓ Element exists: %s", selector)
 	return nil
 }
@@ -211,12 +211,12 @@ func (e *Executor) checkElementExists(step Step) error {
 func (e *Executor) checkURL(step Step) error {
 	expectedURL := e.interpolate(step.URL)
 	var currentURL string
-	
+
 	err := chromedp.Run(e.ctx, chromedp.Location(&currentURL))
 	if err != nil {
 		return err
 	}
-	
+
 	// Simple wildcard matching
 	if strings.Contains(expectedURL, "**") {
 		prefix := strings.Split(expectedURL, "**")[0]
@@ -226,7 +226,7 @@ func (e *Executor) checkURL(step Step) error {
 	} else if !strings.Contains(currentURL, expectedURL) {
 		return fmt.Errorf("URL does not match: expected %s, got %s", expectedURL, currentURL)
 	}
-	
+
 	log.Printf("✓ URL matches: %s", currentURL)
 	return nil
 }
@@ -261,13 +261,13 @@ func (e *Executor) extract(step Step) error {
 
 func (e *Executor) extractAll(step Step) error {
 	log.Printf("Extracting all items with selector: %s", step.Selector)
-	
+
 	// Execute forEach steps for each item (simplified)
 	if len(step.ForEach) > 0 {
 		log.Printf("Executing forEach steps")
 		return e.ExecuteSteps(step.ForEach)
 	}
-	
+
 	return nil
 }
 
@@ -309,12 +309,12 @@ func (e *Executor) runJs(step Step) error {
 func (e *Executor) ifCondition(step Step) error {
 	script := e.interpolate(step.Script)
 	var result bool
-	
+
 	err := chromedp.Run(e.ctx, chromedp.Evaluate(script, &result))
 	if err != nil {
 		return err
 	}
-	
+
 	if result && len(step.Then) > 0 {
 		log.Printf("Condition true, executing 'then' steps")
 		return e.ExecuteSteps(step.Then)
@@ -322,6 +322,6 @@ func (e *Executor) ifCondition(step Step) error {
 		log.Printf("Condition false, executing 'else' steps")
 		return e.ExecuteSteps(step.Else)
 	}
-	
+
 	return nil
 }
