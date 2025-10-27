@@ -10,6 +10,23 @@ Invoice Radar is a document automation tool that helps you fetch, download, and 
 
 [📟 Learn more about Invoice Radar](https://invoiceradar.com/)
 
+## 🚀 Golang Plugin Executor
+
+This repository now includes a **Golang chromedp application** that can execute Invoice Radar plugins! 
+
+**[📖 See the Go implementation documentation →](GO_README.md)**
+
+The Go executor provides:
+- Standalone plugin execution using Chrome DevTools Protocol
+- Support for all major plugin actions (navigation, extraction, downloads)
+- Command-line interface for easy testing
+- No Invoice Radar installation required for development
+
+Perfect for:
+- Testing plugins during development
+- Automating document fetching in scripts
+- Learning how the plugin system works
+
 #### Table of Contents
 
 1. [Introduction](#1-introduction)
